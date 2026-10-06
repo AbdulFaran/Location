@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Muskan Device Tracker</title>
+<style>
+:root{font-family:Inter,system-ui,Arial,sans-serif;color:#172033;background:#f5f7fb}
+*{box-sizing:border-box}body{margin:0}.app{min-height:100vh}
+header{height:68px;background:#fff;border-bottom:1px solid #e7eaf0;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px}.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#635bff,#27b7ff);display:grid;place-items:center;color:#fff;font-size:19px}
+nav{display:flex;gap:8px}button{border:0;border-radius:10px;padding:10px 14px;background:#eef1f7;color:#263149;font-weight:700;cursor:pointer}button.primary{background:#171d2d;color:#fff}
+main{max-width:1180px;margin:0 auto;padding:24px}.hero{background:linear-gradient(135deg,#151b2c,#273557);color:#fff;border-radius:20px;padding:24px;display:flex;justify-content:space-between;gap:20px;align-items:center}
+.hero h1{margin:0 0 7px;font-size:28px}.hero p{margin:0;color:#cbd3e7}.pill{padding:7px 11px;border-radius:999px;background:#ffffff18;border:1px solid #ffffff25;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}.card{background:#fff;border:1px solid #e6e9f0;border-radius:16px;padding:18px}.stat b{font-size:26px;display:block;margin-top:6px}.muted{color:#718096;font-size:13px}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px}.map{height:420px;border-radius:14px;background:#e9edf4;position:relative;overflow:hidden;background-image:linear-gradient(30deg,#dfe4ec 12%,transparent 12.5%,transparent 87%,#dfe4ec 87.5%,#dfe4ec),linear-gradient(150deg,#dfe4ec 12%,transparent 12.5%,transparent 87%,#dfe4ec 87.5%,#dfe4ec);background-size:80px 80px}
+.road{position:absolute;background:#fff;height:14px;transform:rotate(-28deg);width:120%;top:46%;left:-10%;box-shadow:0 1px 3px #aab2c2}.road.r2{transform:rotate(19deg);top:25%;}.marker{position:absolute;left:56%;top:47%;width:24px;height:24px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#635bff;box-shadow:0 0 0 7px #635bff25}.marker:after{content:"";width:8px;height:8px;border-radius:50%;background:#fff;position:absolute;left:8px;top:8px}.maplabel{position:absolute;left:18px;top:18px;background:#fff;padding:9px 12px;border-radius:10px;font-size:13px;box-shadow:0 4px 18px #0001}
+.device{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #edf0f5}.device:last-child{border:0}.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#20b77a;margin-right:7px}.actions{display:flex;gap:7px;flex-wrap:wrap}.history{margin-top:16px}.row{display:grid;grid-template-columns:1fr 1fr 1fr 100px;padding:12px 0;border-bottom:1px solid #edf0f5;font-size:14px}
+.badge{padding:5px 8px;border-radius:7px;background:#eef7f2;color:#18744e;font-size:12px;font-weight:700}.danger{background:#fff0f0;color:#b52b2b}
+.modal{position:fixed;inset:0;background:#10152299;display:none;place-items:center;padding:20px;z-index:10}.modal.show{display:grid}.modalbox{background:#fff;max-width:440px;width:100%;border-radius:18px;padding:22px}.modalbox input{width:100%;padding:12px;border:1px solid #dfe3eb;border-radius:10px;margin:10px 0 15px}
+@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.hero{display:block}.hero .pill{display:inline-block;margin-top:15px}.row{grid-template-columns:1fr 1fr}.map{height:320px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><div class="logo">M</div>Muskan Device Tracker</div><nav><button onclick="openRequest()">Request Tracking</button><button class="primary" onclick="openAdd()">Add Device</button></nav></header>
+<main>
+<section class="hero"><div><h1>Device Tracking Dashboard</h1><p>Consent-based GPS tracking • 8-day location history</p></div><span class="pill">● Secure tracking</span></section>
+<section class="stats">
+<div class="card stat"><span class="muted">Registered devices</span><b id="deviceCount">2</b></div>
+<div class="card stat"><span class="muted">Online now</span><b id="onlineCount">1</b></div>
+<div class="card stat"><span class="muted">Tracking requests</span><b id="requestCount">1</b></div>
+<div class="card stat"><span class="muted">History retention</span><b>8 days</b></div>
+</section>
+<section class="grid">
+<div class="card"><h3>Live GPS Map</h3><div class="map"><div class="road"></div><div class="road r2"></div><div class="marker" title="Demo marker"></div><div class="maplabel">Demo map — connect Google Maps API for live tiles</div></div><div class="muted" style="margin-top:10px">Live marker is shown only for devices that have accepted location tracking.</div></div>
+<div class="card"><h3>Registered Devices</h3><div id="devices"></div><div class="actions" style="margin-top:15px"><button onclick="showHistory()">View 8-day history</button><button onclick="openRequest()">New request</button></div></div>
+</section>
+<section class="card history"><h3>8-Day Location History</h3><div class="row"><b>Date</b><b>Time</b><b>Location</b><b>Status</b></div><div id="historyRows"></div></section>
+</main>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox" id="modalbox"></div></div>
+<script>
+const devices=[
+ {name:"My Android",id:"device-001",status:"Online",last:"Just now"},
+ {name:"Family Phone",id:"device-002",status:"Offline",last:"2h ago"}
+];
+const history=[
+ ["Today","07:42","33.6844, 73.0479","Live"],
+ ["Today","06:55","33.6828, 73.0501","Saved"],
+ ["Yesterday","22:10","33.6902, 73.0550","Saved"],
+ ["Yesterday","18:25","33.6771, 73.0414","Saved"],
+ ["Oct 04","14:20","33.6850, 73.0488","Saved"],
+ ["Oct 03","11:05","33.6814, 73.0442","Saved"]
+];
+function render(){
+ document.getElementById("devices").innerHTML=devices.map((d,i)=>`<div class="device"><div><b>${d.name}</b><div class="muted">${d.id} · ${d.last}</div></div><span class="${d.status==='Online'?'badge':'badge danger'}"><i class="dot" style="background:${d.status==='Online'?'#20b77a':'#c7cbd4'}"></i>${d.status}</span></div>`).join("");
+ document.getElementById("historyRows").innerHTML=history.map(r=>`<div class="row"><span>${r[0]}</span><span>${r[1]}</span><span>${r[2]}</span><span class="badge">${r[3]}</span></div>`).join("");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+function openAdd(){document.getElementById("modalbox").innerHTML=`<h2>Add device</h2><p class="muted">Register a device that has agreed to tracking.</p><input id="devName" placeholder="Device name"><input id="devId" placeholder="Device ID / IMEI label"><div class="actions"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="addDevice()">Save device</button></div>`;document.getElementById("modal").classList.add("show")}
+function addDevice(){let n=document.getElementById("devName").value||"New Device",id=document.getElementById("devId").value||"device-"+(devices.length+1);devices.push({name:n,id,status:"Offline",last:"Not connected"});document.getElementById("deviceCount").textContent=devices.length;render();closeModal()}
+function openRequest(){document.getElementById("modalbox").innerHTML=`<h2>Tracking request</h2><p>Send a request to a registered device. The device owner must explicitly accept it and grant Android location permission.</p><input placeholder="Device ID or account email"><div class="actions"><button onclick="closeModal()">Cancel</button><button class="primary" onclick="sendRequest()">Send request</button></div>`;document.getElementById("modal").classList.add("show")}
+function sendRequest(){document.getElementById("requestCount").textContent="2";alert("Request created. The recipient must Accept it on their phone.");closeModal()}
+function showHistory(){document.querySelector(".history").scrollIntoView({behavior:"smooth"})}
+render();
+</script>
+</body>
+</html>
